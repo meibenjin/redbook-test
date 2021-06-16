@@ -1,0 +1,37 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  name: tfjob-smoketest
+spec:
+  cleanPodPolicy: Running
+  RunPolicy:
+    SchedulingPolicy:
+      MinAvailable: 2
+      Queue: redbook-queue
+  tfReplicaSpecs:
+    Worker:
+      replicas: 4
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+          - name: tensorflow
+            image: registry-vpc.cn-shanghai.aliyuncs.com/pai-dlc/tensorflow-training:1.15-cpu-py36-ubuntu18.04
+            imagePullPolicy: Always
+            command:
+            - sh
+            - -c
+            - tail -f /dev/null
+            env:
+            - name: workers
+              value: "4"
+            - name: DLC_PLATFORM
+              value: Aliyun
+            - name: LICENSE_SDK_HOST
+              value: http://license-pai.cn-shanghai.data.aliyun.com
+            ports:
+            - containerPort: 20000
+              name: tfjob-port
+            workingDir: /workspace
+          hostIPC: true
+          hostPID: true
